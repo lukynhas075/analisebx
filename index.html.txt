@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise Jogo do Bicho</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9; /* slate-100 */
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #a5b4fc; /* indigo-300 */
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #818cf8; /* indigo-400 */
+        }
+        .delete-btn {
+            opacity: 0.2;
+            transition: opacity 0.2s;
+        }
+        .result-card:hover .delete-btn {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
+        <h1 class="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-6"></h1>
+
+        <!-- Abas de Navegação -->
+        <div class="border-b border-gray-200 mb-6">
+            <nav class="flex flex-wrap justify-center -mb-px" aria-label="Tabs">
+                <button id="tab-adicionar" class="tab-btn whitespace-nowrap mx-2 py-4 px-1 border-b-2 font-medium text-lg text-indigo-600 border-indigo-500" onclick="switchTab('adicionar')">Adicionar</button>
+                <button id="tab-sonhos" class="tab-btn whitespace-nowrap mx-2 py-4 px-1 border-b-2 font-medium text-lg text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300" onclick="switchTab('sonhos')">Sonhos</button>
+                <button id="tab-analise" class="tab-btn whitespace-nowrap mx-2 py-4 px-1 border-b-2 font-medium text-lg text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300" onclick="switchTab('analise')">Análise IA</button>
+                <button id="tab-historico" class="tab-btn whitespace-nowrap mx-2 py-4 px-1 border-b-2 font-medium text-lg text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300" onclick="switchTab('historico')">Histórico</button>
+                <button id="tab-repeticoes" class="tab-btn whitespace-nowrap mx-2 py-4 px-1 border-b-2 font-medium text-lg text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300" onclick="switchTab('repeticoes')">Repetições</button>
+                <button id="tab-grupos" class="tab-btn whitespace-nowrap mx-2 py-4 px-1 border-b-2 font-medium text-lg text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300" onclick="switchTab('grupos')">Grupos</button>
+            </nav>
+        </div>
+
+        <!-- Conteúdo das Abas -->
+        <div id="content-container">
+            <!-- Aba de Adicionar Resultados -->
+            <div id="content-adicionar" class="tab-content active">
+                 <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Adicionar Novo Resultado</h2>
+                <form id="form-add-resultado" class="space-y-6 max-w-lg mx-auto">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label for="data-resultado" class="block text-sm font-medium text-gray-700">Data</label>
+                            <input type="date" id="data-resultado" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                        </div>
+                        <div>
+                            <label for="loteria-resultado" class="block text-sm font-medium text-gray-700">Loteria</label>
+                            <select id="loteria-resultado" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                <option>Bahia</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="hora-resultado" class="block text-sm font-medium text-gray-700">Hora</label>
+                             <select id="hora-resultado" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                <option>10hs</option>
+                                <option>12hrs</option>
+                                <option>15hrs</option>
+                                <option>19hrs</option>
+                                <option>21hrs</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="premios-inputs">
+                        <!-- Inputs dos prêmios serão gerados aqui -->
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 ease-in-out">Salvar Resultado Completo</button>
+                </form>
+                <div id="feedback-message" class="mt-4 text-center text-sm font-medium"></div>
+            </div>
+            
+            <!-- Aba de Sonhos -->
+            <div id="content-sonhos" class="tab-content">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Interpretação de Sonhos</h2>
+                 <div class="text-center max-w-sm mx-auto">
+                    <p class="text-gray-600 mb-4">Descreva o seu sonho e a IA irá gerar um palpite baseado nele.</p>
+                    <textarea id="dream-input" class="w-full p-2 border border-gray-300 rounded-md" rows="3" placeholder="Ex: Sonhei com água limpa e um cavalo correndo..."></textarea>
+                    <button id="gerar-palpite-sonho-btn" class="mt-4 w-full bg-purple-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-300 ease-in-out">
+                        Interpretar Sonho
+                    </button>
+                    <div id="resultado-sonho" class="mt-6 p-6 bg-gray-50 rounded-lg min-h-[150px] flex flex-col items-center justify-center">
+                        <p class="text-gray-500">Aguardando a descrição do seu sonho...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba de Análise IA -->
+            <div id="content-analise" class="tab-content">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Análise da Sorte com IA</h2>
+                <div class="space-y-6">
+                    <div class="p-4 bg-teal-50 rounded-lg text-center">
+                         <h3 class="text-lg font-semibold text-teal-800 mb-2">Quais milhares estão 'quentes' hoje? (Análise IA)</h3>
+                         <p class="text-sm text-teal-700 mb-4">A IA analisa as tendências e os assuntos mais comentados no Brasil hoje para sugerir os milhares do dia.</p>
+                         <button id="pesquisar-palpites-brasil-btn" class="bg-teal-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-teal-700 transition duration-300">
+                            Analisar Tendências do Dia
+                         </button>
+                    </div>
+                    <div id="palpites-brasil-container" class="space-y-3">
+                        <!-- Palpites da IA serão inseridos aqui -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba de Histórico -->
+            <div id="content-historico" class="tab-content">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Histórico de Resultados</h2>
+                <div id="historico-container" class="max-h-[600px] overflow-y-auto space-y-4 p-1 custom-scrollbar">
+                    <p class="text-center text-gray-500">A carregar histórico...</p>
+                </div>
+            </div>
+
+            <!-- Aba de Repetições -->
+            <div id="content-repeticoes" class="tab-content">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Milhares Repetidos</h2>
+                <div class="flex flex-col sm:flex-row gap-4 items-center justify-center mb-4 p-4 bg-slate-50 rounded-lg">
+                    <div>
+                        <label for="start-date" class="block text-sm font-medium text-gray-700">De:</label>
+                        <input type="date" id="start-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="end-date" class="block text-sm font-medium text-gray-700">Até:</label>
+                        <input type="date" id="end-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <button id="filter-btn" class="self-end sm:self-center mt-2 sm:mt-0 bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700">Filtrar</button>
+                </div>
+                <div id="repeticoes-container" class="max-h-80 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                    <p class="text-center text-gray-500">A carregar resultados...</p>
+                </div>
+            </div>
+
+            <!-- Aba de Grupos -->
+            <div id="content-grupos" class="tab-content">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Tabela de Grupos e Dezenas</h2>
+                <div id="tabela-grupos" class="max-h-96 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-4 pr-2 custom-scrollbar">
+                    <!-- Cards dos animais serão inseridos aqui pelo JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Confirmação para Apagar -->
+    <div id="delete-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Apagar Resultado</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">
+                        Tem a certeza que quer apagar este resultado? Esta ação não pode ser desfeita.
+                    </p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="confirm-delete-btn" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-auto shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">
+                        Apagar
+                    </button>
+                    <button id="cancel-delete-btn" class="px-4 py-2 bg-gray-200 text-gray-900 text-base font-medium rounded-md w-auto ml-2 shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, doc, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'jogo-bicho-app-local';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "YOUR_API_KEY", authDomain: "YOUR_AUTH_DOMAIN", projectId: "YOUR_PROJECT_ID" };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let userId = null;
+        let isAuthReady = false;
+        let resultadosCollectionRef;
+        let latestResultados = [];
+
+        const animais = [ { grupo: 1, nome: 'Avestruz', dezenas: ['01', '02', '03', '04'], emoji: '🐦' }, { grupo: 2, nome: 'Águia', dezenas: ['05', '06', '07', '08'], emoji: '🦅' }, { grupo: 3, nome: 'Burro', dezenas: ['09', '10', '11', '12'], emoji: '🐴' }, { grupo: 4, nome: 'Borboleta', dezenas: ['13', '14', '15', '16'], emoji: '🦋' }, { grupo: 5, nome: 'Cachorro', dezenas: ['17', '18', '19', '20'], emoji: '🐶' }, { grupo: 6, nome: 'Cabra', dezenas: ['21', '22', '23', '24'], emoji: '🐐' }, { grupo: 7, nome: 'Carneiro', dezenas: ['25', '26', '27', '28'], emoji: '🐏' }, { grupo: 8, nome: 'Camelo', dezenas: ['29', '30', '31', '32'], emoji: '🐫' }, { grupo: 9, nome: 'Cobra', dezenas: ['33', '34', '35', '36'], emoji: '🐍' }, { grupo: 10, nome: 'Coelho', dezenas: ['37', '38', '39', '40'], emoji: '🐰' }, { grupo: 11, nome: 'Cavalo', dezenas: ['41', '42', '43', '44'], emoji: '🐎' }, { grupo: 12, nome: 'Elefante', dezenas: ['45', '46', '47', '48'], emoji: '🐘' }, { grupo: 13, nome: 'Galo', dezenas: ['49', '50', '51', '52'], emoji: '🐔' }, { grupo: 14, nome: 'Gato', dezenas: ['53', '54', '55', '56'], emoji: '🐱' }, { grupo: 15, nome: 'Jacaré', dezenas: ['57', '58', '59', '60'], emoji: '🐊' }, { grupo: 16, nome: 'Leão', dezenas: ['61', '62', '63', '64'], emoji: '🦁' }, { grupo: 17, nome: 'Macaco', dezenas: ['65', '66', '67', '68'], emoji: '🐒' }, { grupo: 18, nome: 'Porco', dezenas: ['69', '70', '71', '72'], emoji: '🐷' }, { grupo: 19, nome: 'Pavão', dezenas: ['73', '74', '75', '76'], emoji: '🦚' }, { grupo: 20, nome: 'Peru', dezenas: ['77', '78', '79', '80'], emoji: '🦃' }, { grupo: 21, nome: 'Touro', dezenas: ['81', '82', '83', '84'], emoji: '🐂' }, { grupo: 22, nome: 'Tigre', dezenas: ['85', '86', '87', '88'], emoji: '🐅' }, { grupo: 23, nome: 'Urso', dezenas: ['89', '90', '91', '92'], emoji: '🐻' }, { grupo: 24, nome: 'Veado', dezenas: ['93', '94', '95', '96'], emoji: '🦌' }, { grupo: 25, nome: 'Vaca', dezenas: ['97', '98', '99', '00'], emoji: '🐄' } ];
+        
+        const mapaSonhos = {
+            'agua': 15, 'rio': 15, 'mar': 15, 'nadar': 15, 'peixe': 15, // Jacaré
+            'cobra': 9, 'serpente': 9, // Cobra
+            'voar': 2, 'ceu': 2, 'passaro': 2, 'ave': 1, // Águia / Avestruz
+            'cavalo': 11, 'correr': 11, 'corrida': 11, // Cavalo
+            'gato': 14, // Gato
+            'cachorro': 5, 'cao': 5, // Cachorro
+            'casa': 5, 'porta': 3, 'construcao': 3, // Cachorro / Burro
+            'festa': 5, 'dancar': 17, 'musica': 17, // Cachorro / Macaco
+            'dinheiro': 14, 'moeda': 8, 'ouro': 8, // Gato / Camelo
+            'morte': 4, 'caixao': 4, 'cemiterio': 4, // Borboleta
+            'briga': 13, 'luta': 16, // Galo / Leão
+            'crianca': 10, 'bebe': 10, // Coelho
+            'fogo': 22, 'incendio': 22, // Tigre
+            'estrada': 21, 'viagem': 21, 'caminho': 3, // Touro / Burro
+            'numero': 19, 'jogo': 19, // Pavão
+            'comida': 18, 'fome': 18, // Porco
+        };
+
+        const deleteModal = document.getElementById('delete-modal');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const feedbackMessage = document.getElementById('feedback-message');
+
+        window.switchTab = (tabName) => {
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('text-indigo-600', 'border-indigo-500');
+                b.classList.add('text-gray-500', 'border-transparent');
+            });
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            const tabButton = document.getElementById(`tab-${tabName}`);
+            tabButton.classList.add('text-indigo-600', 'border-indigo-500');
+            tabButton.classList.remove('text-gray-500', 'border-transparent');
+
+            document.getElementById(`content-${tabName}`).classList.add('active');
+        };
+
+        function preencherTabelaGrupos() {
+            const container = document.getElementById('tabela-grupos');
+            container.innerHTML = animais.map(a => `<div class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center"><div class="text-4xl mb-2">${a.emoji}</div><p class="font-bold text-gray-800">${a.nome}</p><p class="text-sm text-gray-600">Grupo ${a.grupo}</p><p class="text-xs text-indigo-600 font-medium mt-1">${a.dezenas.join(', ')}</p></div>`).join('');
+        }
+
+        function formatarData(dataString) {
+            if (!dataString) return '';
+            const [ano, mes, dia] = dataString.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        function formatarDataComDiaDaSemana(dataString) {
+            if (!dataString) return '';
+            const data = new Date(dataString + 'T12:00:00');
+            const diasDaSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            const diaDaSemana = diasDaSemana[data.getDay()];
+            const [ano, mes, dia] = dataString.split('-');
+            return `${diaDaSemana}, ${dia}/${mes}`;
+        }
+
+        function encontrarAnimalPelaDezena(dezena) {
+            if (typeof dezena !== 'string' || dezena.length < 2) return null;
+            const dezenaNum = parseInt(dezena.slice(-2), 10);
+            if (isNaN(dezenaNum)) return null;
+            if (dezenaNum === 0) return animais.find(a => a.grupo === 25);
+            const grupo = Math.ceil(dezenaNum / 4);
+            return animais.find(a => a.grupo === grupo);
+        }
+
+        function exibirHistorico(resultados) {
+            const container = document.getElementById('historico-container');
+            if (resultados.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500">Nenhum resultado salvo ainda.</p>';
+                return;
+            }
+            container.innerHTML = resultados.map(res => {
+                const header = `
+                    <div class="result-card bg-slate-50 p-4 rounded-lg shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-3">
+                            <div>
+                                <h3 class="font-bold text-lg text-indigo-700">${res.loteria} - ${res.hora}</h3>
+                                <p class="text-sm text-slate-600">${formatarData(res.data)}</p>
+                            </div>
+                            <button class="delete-btn text-red-500 hover:text-red-700 font-bold p-1" data-id="${res.id}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>
+                            </button>
+                        </div>
+                        <ol class="space-y-1">
+                `;
+                const premiosHtml = res.premios.map((premio, index) => {
+                    if (!premio) return '';
+                    const animal = encontrarAnimalPelaDezena(premio);
+                    const animalHtml = animal ? `<span class="text-sm text-slate-600 ml-2">${animal.emoji} ${animal.nome}</span>` : '';
+                    return `
+                        <li class="flex items-baseline">
+                            <span class="font-bold text-slate-800 w-8">${index + 1}º</span>
+                            <span class="font-mono">${premio}</span>
+                            ${animalHtml}
+                        </li>
+                    `;
+                }).join('');
+                const footer = `</ol></div>`;
+                return header + premiosHtml + footer;
+            }).join('');
+
+            container.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const docId = e.currentTarget.dataset.id;
+                    confirmDeleteBtn.dataset.docId = docId;
+                    deleteModal.classList.remove('hidden');
+                });
+            });
+        }
+
+        function exibirRepeticoes(resultados) {
+            const container = document.getElementById('repeticoes-container');
+            const contagemMilhares = resultados.reduce((acc, res) => {
+                if (res.premios && Array.isArray(res.premios)) {
+                    res.premios.forEach(premio => {
+                        if (premio && (premio.length === 4 || premio.length === 3)) {
+                            const milharNormalizado = premio.padStart(4, '0');
+                            if (!acc[milharNormalizado]) {
+                                acc[milharNormalizado] = [];
+                            }
+                            acc[milharNormalizado].push({ data: res.data, hora: res.hora });
+                        }
+                    });
+                }
+                return acc;
+            }, {});
+
+            const repetidos = Object.entries(contagemMilhares)
+                .filter(([milhar, ocorrencias]) => ocorrencias.length > 1)
+                .map(([milhar, ocorrencias]) => ({
+                    milhar: milhar,
+                    ocorrencias: ocorrencias.length,
+                    detalhes: ocorrencias
+                }))
+                .sort((a, b) => b.ocorrencias - a.ocorrencias);
+
+            if (repetidos.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500">Nenhum milhar repetido encontrado neste período.</p>';
+                return;
+            }
+
+            container.innerHTML = repetidos.map(item => `
+                <div class="bg-slate-100 p-4 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <p class="text-2xl font-bold text-slate-800">${item.milhar}</p>
+                        <span class="bg-indigo-200 text-indigo-800 text-sm font-bold px-3 py-1 rounded-full">${item.ocorrencias}x</span>
+                    </div>
+                    <div class="mt-2 text-sm text-slate-600">
+                        <p>Ocorrências: ${item.detalhes.map(d => `${formatarDataComDiaDaSemana(d.data)} (${d.hora})`).join(' | ')}</p>
+                    </div>
+                </div>`).join('');
+        }
+        
+        function handleFilterRepeticoes() {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+
+            const filteredResults = latestResultados.filter(res => {
+                if (!startDate || !endDate) return true;
+                return res.data >= startDate && res.data <= endDate;
+            });
+
+            exibirRepeticoes(filteredResults);
+        }
+        
+        function gerarPalpiteDoSonho(textoSonho) {
+            const palavras = textoSonho.toLowerCase().match(/\b(\w+)\b/g) || [];
+            let grupoSugeridoId = null;
+
+            for (const palavra of palavras) {
+                if (mapaSonhos[palavra]) {
+                    grupoSugeridoId = mapaSonhos[palavra];
+                    break;
+                }
+            }
+
+            if (!grupoSugeridoId) {
+                grupoSugeridoId = Math.ceil(Math.random() * 25);
+            }
+            
+            const animalSugerido = animais.find(a => a.grupo == grupoSugeridoId);
+            const dezenaSugerida = animalSugerido.dezenas[Math.floor(Math.random() * animalSugerido.dezenas.length)];
+            const prefixo = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+            const milharSugerida = prefixo + dezenaSugerida;
+            
+            return { milhar: milharSugerida, animal: animalSugerido };
+        }
+
+        document.getElementById('gerar-palpite-sonho-btn').addEventListener('click', () => {
+            const dreamInput = document.getElementById('dream-input').value;
+            if (dreamInput.trim() === '') {
+                alert('Por favor, descreva o seu sonho primeiro.');
+                return;
+            }
+
+            const resultadoContainer = document.getElementById('resultado-sonho');
+            resultadoContainer.innerHTML = `<div class="animate-pulse flex flex-col items-center justify-center"><p class="text-gray-600">A IA está a interpretar...</p></div>`;
+
+            setTimeout(() => {
+                const { milhar, animal } = gerarPalpiteDoSonho(dreamInput);
+                resultadoContainer.innerHTML = `
+                    <div class="text-center">
+                        <p class="text-sm text-gray-500">Palpite do Sonho</p>
+                        <p class="text-5xl font-bold text-gray-800 tracking-widest">${milhar}</p>
+                        <div class="mt-4 pt-4 border-t border-gray-200 w-full">
+                            <p class="text-sm text-gray-500">Animal Associado</p>
+                            <p class="text-3xl font-semibold text-purple-600">${animal.emoji} ${animal.nome}</p>
+                            <p class="text-gray-600">Grupo ${animal.grupo}</p>
+                        </div>
+                    </div>`;
+            }, 1500);
+        });
+        
+        document.getElementById('pesquisar-palpites-brasil-btn').addEventListener('click', async () => {
+            const container = document.getElementById('palpites-brasil-container');
+            container.innerHTML = `<div class="text-center p-4"><p class="animate-pulse text-teal-700">A IA está analisando as tendências do dia no Brasil... Isso pode levar um momento.</p></div>`;
+
+            const prompt = "Aja como um analista experiente do Jogo do Bicho. Com base nos principais acontecimentos, notícias e temas populares no Brasil hoje (terça-feira, 1 de julho de 2025), gere 3 palpites de milhar. Para cada um, forneça o milhar, o nome do animal e uma justificativa curta e direta explicando por que esse palpite está 'quente' hoje, conectando-o a um evento ou tema atual.";
+
+            try {
+                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = {
+                    contents: chatHistory,
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                palpites: {
+                                    type: "ARRAY",
+                                    items: {
+                                        type: "OBJECT",
+                                        properties: {
+                                            milhar: { type: "STRING" },
+                                            animal: { type: "STRING" },
+                                            justificativa: { type: "STRING" }
+                                        },
+                                        required: ["milhar", "animal", "justificativa"]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0]) {
+                    const data = JSON.parse(result.candidates[0].content.parts[0].text);
+                    container.innerHTML = data.palpites.map(p => {
+                        const animalInfo = animais.find(a => a.nome.toLowerCase() === p.animal.toLowerCase());
+                        const emoji = animalInfo ? animalInfo.emoji : '❓';
+                        return `
+                        <div class="bg-slate-100 p-4 rounded-lg shadow-sm border-l-4 border-teal-500">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-2xl font-bold text-slate-800">${p.milhar}</p>
+                                    <p class="font-semibold text-teal-800">${emoji} ${p.animal}</p>
+                                </div>
+                            </div>
+                            <p class="mt-2 text-sm text-slate-600 italic">"${p.justificativa}"</p>
+                        </div>`;
+                    }).join('');
+                } else {
+                    throw new Error("Resposta da IA em formato inesperado.");
+                }
+            } catch (error) {
+                console.error("Erro ao buscar palpites da IA:", error);
+                container.innerHTML = `<div class="text-center p-4 text-red-600">Desculpe, a IA não conseguiu analisar as tendências agora. Tente novamente mais tarde.</div>`;
+            }
+        });
+
+        const form = document.getElementById('form-add-resultado');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!isAuthReady || !userId) {
+                feedbackMessage.textContent = "Erro de autenticação. Tente novamente.";
+                feedbackMessage.className = "mt-4 text-center text-sm font-medium text-red-600";
+                return;
+            }
+            
+            const premios = [];
+            let peloMenosUmPreenchido = false;
+            for (let i = 1; i <= 10; i++) {
+                const input = document.getElementById(`premio-${i}`);
+                const value = input.value.trim();
+                if (value) peloMenosUmPreenchido = true;
+                premios.push(value);
+            }
+
+            if (!peloMenosUmPreenchido) {
+                feedbackMessage.textContent = "Por favor, preencha pelo menos um prêmio.";
+                feedbackMessage.className = "mt-4 text-center text-sm font-medium text-red-600";
+                setTimeout(() => { feedbackMessage.textContent = ''; }, 3000);
+                return;
+            }
+
+            const resultado = {
+                data: document.getElementById('data-resultado').value,
+                loteria: document.getElementById('loteria-resultado').value,
+                hora: document.getElementById('hora-resultado').value,
+                premios: premios
+            };
+
+            try {
+                await addDoc(resultadosCollectionRef, resultado);
+                feedbackMessage.textContent = "Resultado salvo com sucesso!";
+                feedbackMessage.className = "mt-4 text-center text-sm font-medium text-green-600";
+                form.reset();
+                document.getElementById('data-resultado').valueAsDate = new Date();
+                gerarInputsPremios(); // Limpa os inputs
+            } catch (error) {
+                console.error("Erro ao salvar resultado: ", error);
+                feedbackMessage.textContent = "Erro ao salvar. Tente novamente.";
+                feedbackMessage.className = "mt-4 text-center text-sm font-medium text-red-600";
+            }
+            setTimeout(() => { feedbackMessage.textContent = ''; }, 3000);
+        });
+
+        cancelDeleteBtn.addEventListener('click', () => {
+            deleteModal.classList.add('hidden');
+        });
+
+        confirmDeleteBtn.addEventListener('click', async () => {
+            const docId = confirmDeleteBtn.dataset.docId;
+            if (docId) {
+                try {
+                    await deleteDoc(doc(resultadosCollectionRef, docId));
+                } catch (error) {
+                    console.error("Erro ao apagar: ", error);
+                } finally {
+                    deleteModal.classList.add('hidden');
+                    delete confirmDeleteBtn.dataset.docId;
+                }
+            }
+        });
+
+
+        const endDateInput = document.getElementById('end-date');
+        const startDateInput = document.getElementById('start-date');
+        const today = new Date();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        endDateInput.value = today.toISOString().split('T')[0];
+        startDateInput.value = thirtyDaysAgo.toISOString().split('T')[0];
+
+        document.getElementById('filter-btn').addEventListener('click', handleFilterRepeticoes);
+        document.getElementById('data-resultado').valueAsDate = new Date();
+        
+        function gerarInputsPremios() {
+            const container = document.getElementById('premios-inputs');
+            container.innerHTML = '';
+            for (let i = 1; i <= 10; i++) {
+                const isCentena = (i === 7);
+                const pattern = isCentena ? `\\d{3,4}` : `\\d{4}`;
+                const title = isCentena ? `Digite 3 ou 4 números.` : `Digite 4 números.`;
+                const placeholder = isCentena ? `Ex: 588` : `Ex: 4157`;
+
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <label for="premio-${i}" class="block text-sm font-medium text-gray-700">${i}º Prêmio</label>
+                    <input type="text" id="premio-${i}" pattern="${pattern}" title="${title}" placeholder="${placeholder}" maxlength="4" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        gerarInputsPremios();
+        preencherTabelaGrupos();
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                isAuthReady = true;
+                resultadosCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/resultados`);
+                const q = query(resultadosCollectionRef, orderBy("data", "desc"));
+
+                onSnapshot(q, (snapshot) => {
+                    latestResultados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    exibirHistorico(latestResultados);
+                    handleFilterRepeticoes();
+                }, (error) => {
+                    console.error("Erro ao carregar resultados: ", error);
+                    ['historico-container', 'repeticoes-container'].forEach(id => {
+                        document.getElementById(id).innerHTML = `<p class="text-center text-red-500">Não foi possível carregar os dados.</p>`;
+                    });
+                });
+            } else {
+                isAuthReady = false;
+                userId = null;
+                try {
+                    if (initialAuthToken) await signInWithCustomToken(auth, initialAuthToken);
+                    else await signInAnonymously(auth);
+                } catch (error) {
+                    console.error("Erro na autenticação: ", error);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
